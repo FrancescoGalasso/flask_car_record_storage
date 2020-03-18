@@ -52,3 +52,9 @@ class User(UserMixin, NameModel):
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
+
+class Car(NameModel):
+    __tablename__ = 'car'
+    plate = db.Column(db.String(20), unique=True)
+    brand = db.Column(db.String(20))
+    model = db.Column(db.String(20))
