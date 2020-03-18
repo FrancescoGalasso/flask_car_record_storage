@@ -39,11 +39,22 @@ if not DB_PATH.exists():
 	db.session.add(admin_user)
 	db.session.commit()
 
-# if app_flask_car_record_storage.config['POPULATE_SAMPLE_DB']:
-# 	example_car_1 = models.Car(name='Lancia Ypsilon 2020', plate='123B', brand='Lancia', model='Ypsilon')
-# 	example_car_2 = models.Car(name='Peugeot 307 CC', plate='123A', brand='Peugeot', model='Coupé-Cabriolet')
-# 	db.session.add(example_car_1)
-# 	db.session.add(example_car_2)
-# 	db.session.commit()
+if app_flask_car_record_storage.config['POPULATE_SAMPLE_DB']:
+	cars = models.Car.query.all()
+
+	if not cars:
+		sample_cars= [
+			{'name': 'Lancia Ypsilon 2020', 'plate': '123B', 'brand': 'Lancia', 'model':'Ypsilon'},
+			{'name': 'Peugeot 307 CC', 'plate': '123A', 'brand': 'Peugeot', 'model':'Coupé-Cabriolet'},
+		]
+
+		for sample_car in sample_cars:
+			model_car = models.Car(name=sample_car.get('name'), 
+									plate=sample_car.get('plate'), 
+									brand=sample_car.get('brand'),
+									model=sample_car.get('model'))
+			db.session.add(model_car)
+
+		db.session.commit()
 
 	
