@@ -19,13 +19,13 @@ from app import routes, models
 
 admin = Admin(app_flask_car_record_storage,
 				name='Car Record Storage',
-				template_mode='bootstrap3', 
+				template_mode='bootstrap3',
 				url='/')
 
 admin.add_view(ModelView(models.User, db.session))
 admin.add_view(ModelView(models.Car, db.session))
-# Create DB with a test user if DB does not exist
 
+# Create DB with a test user if DB does not exist
 parent_dir = Path(__file__).parent.parent
 DB_PATH = parent_dir / 'car_record_storage.db'
 
@@ -34,7 +34,7 @@ if not DB_PATH.exists():
 	# create tables
 	db.create_all()
 
-	# create test_user
+	# create admin user
 	admin_user = models.User(name='admin', email='admin@example.com', password_hash=generate_password_hash('admin'))
 	db.session.add(admin_user)
 	db.session.commit()
