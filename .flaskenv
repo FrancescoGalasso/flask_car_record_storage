@@ -1,0 +1,2 @@
+FLASK_APP=flask_car_record_storage.py
+FLASK_DEBUG=1
