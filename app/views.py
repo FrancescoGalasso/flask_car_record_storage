@@ -46,7 +46,7 @@ class UserModelView(BaseCustomModelView):
 
 class CarModelView(BaseCustomModelView):
 	column_exclude_list = ('creation_time', 'modification_time')
-
+	column_filters = ('name', 'model', 'plate', 'brand')
 
 class MyAdminIndexView(AdminIndexView):
 	def is_accessible(self):
