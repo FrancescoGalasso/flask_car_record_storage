@@ -8,6 +8,8 @@ from pathlib import Path
 import pathlib
 from flask_admin import Admin
 from .views import MyAdminIndexView, UserModelView, CarModelView
+from flask_admin.menu import MenuLink
+
 
 app_flask_car_record_storage = Flask(__name__)
 app_flask_car_record_storage.config.from_object(Config)
@@ -26,6 +28,13 @@ admin = Admin(app_flask_car_record_storage,
 
 admin.add_view(UserModelView(models.User, db.session))
 admin.add_view(CarModelView(models.Car, db.session))
+
+class LogoutMenuLink(MenuLink):
+
+    def is_accessible(self):
+        return current_user.is_authenticated             
+
+admin.add_link(LogoutMenuLink(name='Logout', category='', url="/logout"))
 
 # Create DB with a test user if DB does not exist
 parent_dir = Path(__file__).parent.parent
