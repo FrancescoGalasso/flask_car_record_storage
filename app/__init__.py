@@ -6,8 +6,8 @@ from werkzeug.security import generate_password_hash
 from datetime import datetime
 from pathlib import Path
 import pathlib
-from flask_admin import Admin, AdminIndexView
-from flask_admin.contrib.sqla import ModelView
+from flask_admin import Admin
+from .views import MyAdminIndexView, UserModelView, CarModelView
 
 app_flask_car_record_storage = Flask(__name__)
 app_flask_car_record_storage.config.from_object(Config)
@@ -17,65 +17,15 @@ login.login_view = 'login'
 
 from app import routes, models
 
-class CustomModelView(ModelView):
-	def is_accessible(self):
-		return current_user.is_authenticated
 
-	def inacessible_callback(self, name, **kwargs):
-		return redirect(url_for('login'))
-
-	@property
-	def can_create(self):
-		return current_user.name == 'admin'
-
-	@property
-	def can_edit(self):
-		return current_user.name == 'admin'
-
-	@property
-	def can_delete(self):
-		return current_user.name == 'admin'
- 
-	def is_accessible(self):
-		if self.model.__tablename__ == 'user':
-			if current_user.name == 'admin':
-				return True
-			else:
-				return False
-		else:
-			return True
-
-	def is_visible(self):
-		if self.model.__tablename__ == 'user':
-			if current_user.name == 'admin':
-				return True
-			else:
-				return False
-		else:
-			return True
-
-	column_exclude_list = ('password_hash', 'modification_time')
-	
-class MyAdminIndexView(AdminIndexView):
-	def is_accessible(self):
-		return current_user.is_authenticated
-
-	def inaccessible_callback(self, name, **kwargs):
-		# redirect to login page if user doesn't have access
-		return redirect(url_for('login'))
 
 admin = Admin(app_flask_car_record_storage, 
 			template_mode='bootstrap3',
 			index_view=MyAdminIndexView(name='Car Record Storage',
 										url='/'))
 
-# admin = Admin(app_flask_car_record_storage,
-# 				name='Car Record Storage',
-# 				template_mode='bootstrap3',
-# 				url='/')
-
-admin.add_view(CustomModelView(models.User, db.session))
-admin.add_view(CustomModelView(models.Car, db.session))
+admin.add_view(UserModelView(models.User, db.session))
+admin.add_view(CarModelView(models.Car, db.session))
 
 # Create DB with a test user if DB does not exist
 parent_dir = Path(__file__).parent.parent
