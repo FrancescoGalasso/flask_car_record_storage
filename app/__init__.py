@@ -1,12 +1,12 @@
-from flask import Flask
+from flask import Flask, redirect, url_for
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 from werkzeug.security import generate_password_hash
 from datetime import datetime
 from pathlib import Path
 import pathlib
-from flask_admin import Admin
+from flask_admin import Admin, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
 
 app_flask_car_record_storage = Flask(__name__)
@@ -17,13 +17,65 @@ login.login_view = 'login'
 
 from app import routes, models
 
-admin = Admin(app_flask_car_record_storage,
-				name='Car Record Storage',
-				template_mode='bootstrap3',
-				url='/')
+class CustomModelView(ModelView):
+	def is_accessible(self):
+		return current_user.is_authenticated
 
-admin.add_view(ModelView(models.User, db.session))
-admin.add_view(ModelView(models.Car, db.session))
+	def inacessible_callback(self, name, **kwargs):
+		return redirect(url_for('login'))
+
+	@property
+	def can_create(self):
+		return current_user.name == 'admin'
+
+	@property
+	def can_edit(self):
+		return current_user.name == 'admin'
+
+	@property
+	def can_delete(self):
+		return current_user.name == 'admin'
+ 
+	def is_accessible(self):
+		if self.model.__tablename__ == 'user':
+			if current_user.name == 'admin':
+				return True
+			else:
+				return False
+		else:
+			return True
+
+	def is_visible(self):
+		if self.model.__tablename__ == 'user':
+			if current_user.name == 'admin':
+				return True
+			else:
+				return False
+		else:
+			return True
+
+	column_exclude_list = ('password_hash', 'modification_time')
+	
+class MyAdminIndexView(AdminIndexView):
+	def is_accessible(self):
+		return current_user.is_authenticated
+
+	def inaccessible_callback(self, name, **kwargs):
+		# redirect to login page if user doesn't have access
+		return redirect(url_for('login'))
+
+admin = Admin(app_flask_car_record_storage, 
+			template_mode='bootstrap3',
+			index_view=MyAdminIndexView(name='Car Record Storage',
+										url='/'))
+
+# admin = Admin(app_flask_car_record_storage,
+# 				name='Car Record Storage',
+# 				template_mode='bootstrap3',
+# 				url='/')
+
+admin.add_view(CustomModelView(models.User, db.session))
+admin.add_view(CustomModelView(models.Car, db.session))
 
 # Create DB with a test user if DB does not exist
 parent_dir = Path(__file__).parent.parent
@@ -34,9 +86,11 @@ if not DB_PATH.exists():
 	# create tables
 	db.create_all()
 
-	# create admin user
+	# create some users
 	admin_user = models.User(name='admin', email='admin@example.com', password_hash=generate_password_hash('admin'))
+	test_user = models.User(name='test_user', email='test_user@example.com', password_hash=generate_password_hash('test_user'))
 	db.session.add(admin_user)
+	db.session.add(test_user)
 	db.session.commit()
 
 if app_flask_car_record_storage.config['POPULATE_SAMPLE_DB']:
