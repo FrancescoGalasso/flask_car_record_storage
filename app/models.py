@@ -53,8 +53,21 @@ class User(UserMixin, NameModel):
 def load_user(id):
     return User.query.get(int(id))
 
-class Car(NameModel):
+class Car(BaseModel):
     __tablename__ = 'car'
-    plate = db.Column(db.String(20), unique=True)
-    brand = db.Column(db.String(20))
-    model = db.Column(db.String(20))
+    car_plate = db.Column(db.String(20), unique=True)
+    car_model = db.Column(db.String(20), db.ForeignKey('car_model.name'))
+    # car_brand = db.Column(db.String(20), db.ForeignKey('car_model.car_brand_id'))
+    # car_brand = db.Column(db.String(20))
+
+class CarBrand(NameModel):
+    __tablename__ = 'car_brand'
+    name = db.Column(db.String(120), index=True)
+    models = db.relationship('CarModel', backref='car brands', lazy='dynamic')  # many-to-one
+
+class CarModel(NameModel):
+    __tablename__ = 'car_model'
+    car_brand_id = db.Column(db.Integer, db.ForeignKey('car_brand.id'))
+    cars = db.relationship('Car', backref='car model', lazy='dynamic')  # many-to-one
+    # cars = db.relationship('Car', backref='car model', foreign_keys = 'Car.car_model')
+    # brands = db.relationship('Car', backref='car brand', foreign_keys = 'Car.car_brand')

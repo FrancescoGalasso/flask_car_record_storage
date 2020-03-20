@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 import pathlib
 from flask_admin import Admin
-from .views import MyAdminIndexView, UserModelView, CarModelView
+from .views import MyAdminIndexView, UserModelView, CarModelView, CarBrandModelView, CarModelsModelView
 from flask_admin.menu import MenuLink
 
 
@@ -28,6 +28,8 @@ admin = Admin(app_flask_car_record_storage,
 
 admin.add_view(UserModelView(models.User, db.session))
 admin.add_view(CarModelView(models.Car, db.session))
+admin.add_view(CarBrandModelView(models.CarBrand, db.session))
+admin.add_view(CarModelsModelView(models.CarModel, db.session))
 
 class LogoutMenuLink(MenuLink):
 
@@ -54,20 +56,31 @@ if not DB_PATH.exists():
 
 if app_flask_car_record_storage.config['POPULATE_SAMPLE_DB']:
 	cars = models.Car.query.all()
+	brands = models.CarBrand.query.all()
 
-	if not cars:
-		sample_cars= [
-			{'name': 'Lancia Ypsilon 2020', 'plate': '123B', 'brand': 'Lancia', 'model':'Ypsilon'},
-			{'name': 'Peugeot 307 CC', 'plate': '123A', 'brand': 'Peugeot', 'model':'Coupé-Cabriolet'},
-		]
+	if not cars and not brands:
+		sample_db = {
+			'car_brand': [
+				{'id': 1, 'name': 'Ferrari'},
+				{'id': 2, 'name': 'Lamborghini'}
+			],
+			'car_model': [
+				{'name': 'Testarossa', 'car_brand_id': 1},
+				{'name': 'Enzo', 'car_brand_id': 1},
+				{'name': 'Diablo', 'car_brand_id': 2},
+				{'name': 'Gallardo', 'car_brand_id': 2},
+			]
+		}
 
-		for sample_car in sample_cars:
-			model_car = models.Car(name=sample_car.get('name'), 
-									plate=sample_car.get('plate'), 
-									brand=sample_car.get('brand'),
-									model=sample_car.get('model'))
-			db.session.add(model_car)
+		for car_brand in sample_db.get('car_brand'):
+			car_brand_obj = models.CarBrand(id=car_brand.get('id'),
+										name=car_brand.get('name'))
+			db.session.add(car_brand_obj)
+
+		for car_model in sample_db.get('car_model'):
+			car_model_obj = models.CarModel(name=car_model.get('name'),
+										car_brand_id=car_model.get('car_brand_id'))
+			db.session.add(car_model_obj)
 
 		db.session.commit()
 
-	

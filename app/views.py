@@ -2,6 +2,8 @@ from flask import redirect, url_for
 from flask_admin import Admin, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
 from flask_login import current_user
+from wtforms import TextField, BooleanField
+# from app.models import Car
 
 
 class BaseCustomModelView(ModelView):
@@ -44,9 +46,19 @@ class BaseCustomModelView(ModelView):
 class UserModelView(BaseCustomModelView):
 	column_exclude_list = ('password_hash', 'modification_time')
 
-class CarModelView(BaseCustomModelView):
+class BaseCarModelView(BaseCustomModelView):
 	column_exclude_list = ('creation_time', 'modification_time')
-	column_filters = ('name', 'model', 'plate', 'brand')
+
+class CarModelView(BaseCarModelView):
+	# column_filters = ('name', 'model', 'plate', 'brand')
+	pass
+
+class CarBrandModelView(BaseCarModelView):
+	form_excluded_columns = ('models')
+
+class CarModelsModelView(BaseCarModelView):
+	form_excluded_columns = ('cars')
+	# pass
 
 class MyAdminIndexView(AdminIndexView):
 	def is_accessible(self):
